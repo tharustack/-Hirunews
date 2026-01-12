@@ -4,12 +4,15 @@ module.exports = async (req, res) => {
     res.setHeader('Access-Control-Allow-Origin', '*');
     
     try {
-        const { name = 'general', limit = 15 } = req.query;
+        const { name = 'general', limit = 5 } = req.query;
         
-        if (!name) {
+        const validCategories = ['general', 'international', 'entertainment', 'business', 'sports', 'local'];
+        
+        if (!validCategories.includes(name.toLowerCase())) {
             return res.status(400).json({
                 success: false,
-                error: 'Category name is required'
+                error: `Invalid category. Valid categories: ${validCategories.join(', ')}`,
+                validCategories
             });
         }
 
@@ -20,9 +23,11 @@ module.exports = async (req, res) => {
             success: true,
             category: name,
             data: articles,
-            count: articles.length
+            count: articles.length,
+            timestamp: new Date().toISOString()
         });
     } catch (error) {
+        console.error('Category error:', error);
         res.status(500).json({
             success: false,
             error: error.message
