@@ -1,13 +1,39 @@
 {
   "functions": {
     "api/*.js": {
-      "maxDuration": 30
+      "maxDuration": 15
+    },
+    "api/**/*.js": {
+      "maxDuration": 15
     }
   },
   "rewrites": [
     {
+      "source": "/api/article/:id",
+      "destination": "/api/article?id=:id"
+    },
+    {
+      "source": "/api/category/:name",
+      "destination": "/api/category?name=:name"
+    }
+  ],
+  "headers": [
+    {
       "source": "/api/(.*)",
-      "destination": "/api/$1"
+      "headers": [
+        {
+          "key": "Access-Control-Allow-Origin",
+          "value": "*"
+        },
+        {
+          "key": "Access-Control-Allow-Methods",
+          "value": "GET, OPTIONS"
+        },
+        {
+          "key": "Content-Type",
+          "value": "application/json; charset=utf-8"
+        }
+      ]
     }
   ]
 }
