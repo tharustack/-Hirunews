@@ -1,38 +1,41 @@
 const HiruNewsScraper = require('../lib/scraper');
 
 module.exports = async (req, res) => {
+    // Set CORS headers
     res.setHeader('Access-Control-Allow-Origin', '*');
+    res.setHeader('Access-Control-Allow-Methods', 'GET, OPTIONS');
+    res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
     
+    if (req.method === 'OPTIONS') {
+        return res.status(200).end();
+    }
+
     try {
-        const { limit = 20, full = false } = req.query;
+        const { limit = 5, timeout = 20000 } = req.query; // Default to 5 articles for speed
         const scraper = new HiruNewsScraper();
-        const latestNews = await scraper.getLatestNews(parseInt(limit));
-
-        // If full details requested, fetch complete articles
-        if (full === 'true') {
-            const detailedArticles = await Promise.all(
-                latestNews.map(async (article) => {
-                    const fullDetails = await scraper.getFullArticle(article.url);
-                    return { ...article, ...fullDetails };
-                })
-            );
-            
-            return res.json({
-                success: true,
-                data: detailedArticles,
-                count: detailedArticles.length
-            });
-        }
-
-        res.json({
+        
+        // Set a timeout to avoid Vercel's 10-second limit
+        const timeoutPromise = new Promise((_, reject) => {
+            setTimeout(() => reject(new Error('Request timeout')), parseInt(timeout));
+        });
+        
+        const newsPromise = scraper.getLatestNews(parseInt(limit));
+        
+        // Race between news fetching and timeout
+        const articles = await Promise.race([newsPromise, timeoutPromise]);
+        
+        res.status(200).json({
             success: true,
-            data: latestNews,
-            count: latestNews.length
+            data: articles,
+            count: articles.length,
+            timestamp: new Date().toISOString()
         });
     } catch (error) {
+        console.error('Error in latest-news:', error);
         res.status(500).json({
             success: false,
-            error: error.message
+            error: error.message,
+            suggestion: 'Try reducing the limit parameter'
         });
     }
 };
