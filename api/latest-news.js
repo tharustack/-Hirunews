@@ -2,6 +2,11 @@ const HiruNewsScraper = require('../lib/scraper');
 
 module.exports = async (req, res) => {
     res.setHeader('Access-Control-Allow-Origin', '*');
+    res.setHeader('Access-Control-Allow-Methods', 'GET, OPTIONS');
+    
+    if (req.method === 'OPTIONS') {
+        return res.status(200).end();
+    }
     
     try {
         const { limit = 10 } = req.query;
@@ -13,13 +18,15 @@ module.exports = async (req, res) => {
             success: true,
             data: latestNews,
             count: latestNews.length,
-            timestamp: new Date().toISOString()
+            timestamp: new Date().toISOString(),
+            note: 'Data from hirunews.lk homepage'
         });
         
     } catch (error) {
         res.status(500).json({
             success: false,
-            error: error.message
+            error: error.message,
+            suggestion: 'Try reducing the limit parameter'
         });
     }
 };
