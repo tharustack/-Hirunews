@@ -2,27 +2,27 @@ const HiruNewsScraper = require('../lib/scraper');
 
 module.exports = async (req, res) => {
     // Enable CORS
-    res.setHeader('Access-Control-Allow-Credentials', true);
     res.setHeader('Access-Control-Allow-Origin', '*');
-    res.setHeader('Access-Control-Allow-Methods', 'GET,OPTIONS');
-    res.setHeader('Access-Control-Allow-Headers', 'X-CSRF-Token, X-Requested-With, Accept, Accept-Version, Content-Length, Content-MD5, Content-Type, Date, X-Api-Version');
-
+    res.setHeader('Access-Control-Allow-Methods', 'GET, OPTIONS');
+    res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+    
     if (req.method === 'OPTIONS') {
-        res.status(200).end();
-        return;
+        return res.status(200).end();
     }
-
+    
     try {
+        const { limit = 10 } = req.query;
         const scraper = new HiruNewsScraper();
-        const breakingNews = await scraper.getBreakingNews();
+        
+        const breakingNews = await scraper.getBreakingNews(parseInt(limit));
         
         res.status(200).json({
             success: true,
             data: breakingNews,
             count: breakingNews.length,
-            timestamp: new Date().toISOString(),
-            source: 'hirunews.lk'
+            timestamp: new Date().toISOString()
         });
+        
     } catch (error) {
         res.status(500).json({
             success: false,
