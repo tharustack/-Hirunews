@@ -1,10 +1,10 @@
 {
   "functions": {
     "api/*.js": {
-      "maxDuration": 15
+      "maxDuration": 10
     },
     "api/**/*.js": {
-      "maxDuration": 15
+      "maxDuration": 10
     }
   },
   "rewrites": [
@@ -15,6 +15,10 @@
     {
       "source": "/api/category/:name",
       "destination": "/api/category?name=:name"
+    },
+    {
+      "source": "/",
+      "destination": "/api/health"
     }
   ],
   "headers": [
@@ -26,12 +30,8 @@
           "value": "*"
         },
         {
-          "key": "Access-Control-Allow-Methods",
-          "value": "GET, OPTIONS"
-        },
-        {
-          "key": "Content-Type",
-          "value": "application/json; charset=utf-8"
+          "key": "Cache-Control",
+          "value": "s-maxage=60, stale-while-revalidate=300"
         }
       ]
     }
