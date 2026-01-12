@@ -1,37 +1,16 @@
 {
   "functions": {
     "api/*.js": {
-      "maxDuration": 10
-    },
-    "api/**/*.js": {
-      "maxDuration": 10
+      "maxDuration": 15
     }
   },
-  "rewrites": [
-    {
-      "source": "/api/article/:id",
-      "destination": "/api/article?id=:id"
-    },
-    {
-      "source": "/api/category/:name",
-      "destination": "/api/category?name=:name"
-    },
-    {
-      "source": "/",
-      "destination": "/api/health"
-    }
-  ],
   "headers": [
     {
-      "source": "/api/(.*)",
+      "source": "/(.*)",
       "headers": [
         {
           "key": "Access-Control-Allow-Origin",
           "value": "*"
-        },
-        {
-          "key": "Cache-Control",
-          "value": "s-maxage=60, stale-while-revalidate=300"
         }
       ]
     }
