@@ -2,6 +2,7 @@ const HiruNewsScraper = require('../lib/scraper');
 
 module.exports = async (req, res) => {
     res.setHeader('Access-Control-Allow-Origin', '*');
+    res.setHeader('Access-Control-Allow-Methods', 'GET, OPTIONS');
     
     if (req.method === 'OPTIONS') {
         return res.status(200).end();
@@ -19,25 +20,33 @@ module.exports = async (req, res) => {
             });
         }
         
-        // Validate date format
-        if (!/^\d{4}-\d{2}-\d{2}$/.test(date)) {
+        // Simple date validation
+        const dateRegex = /^\d{4}-\d{2}-\d{2}$/;
+        if (!dateRegex.test(date)) {
             return res.status(400).json({
                 success: false,
                 error: 'Invalid date format',
                 received: date,
-                expected: 'YYYY-MM-DD'
+                expected_format: 'YYYY-MM-DD'
             });
         }
         
+        // For now, we'll filter from latest news by date text
         const scraper = new HiruNewsScraper();
-        const articles = await scraper.getNewsByDate(date, parseInt(limit));
+        const allNews = await scraper.getLatestNews(30); // Get more to filter
+        
+        // Filter articles that mention the date
+        const filtered = allNews.filter(article => {
+            return article.date && article.date.includes(date.substring(8, 10)); // Check day
+        }).slice(0, parseInt(limit));
         
         res.json({
             success: true,
             date: date,
-            data: articles,
-            count: articles.length,
-            timestamp: new Date().toISOString()
+            data: filtered,
+            count: filtered.length,
+            timestamp: new Date().toISOString(),
+            note: 'Date filtering is basic. For better date filtering, archive page scraping would be needed.'
         });
         
     } catch (error) {
